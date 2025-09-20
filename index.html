@@ -2,70 +2,119 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My GitHub Repositories</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Hacker GitHub Portfolio</title>
   <style>
     body {
-      display: flex;
       margin: 0;
-      font-family: sans-serif;
+      font-family: monospace;
+      background-color: #0d0d0d;
+      color: #00ff00;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
     }
-    #content {
-      flex: 1;
-      padding: 2em;
+
+    a {
+      color: #00ff00;
+      text-decoration: none;
     }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     #sidebar {
       width: 250px;
-      background: #f4f4f4;
-      border-left: 1px solid #ccc;
+      background: #0f0f0f;
+      border-left: 1px solid #00ff00;
       padding: 1em;
+      overflow-y: auto;
       position: fixed;
       right: 0;
       top: 0;
       bottom: 0;
-      overflow-y: auto;
     }
-    .repo-tab {
+
+    #repo-list a {
       display: block;
       margin: 0.5em 0;
-      color: #0366d6;
-      text-decoration: none;
+    }
+
+    #content {
+      flex: 1;
+      padding: 2em;
+      overflow-y: auto;
+      margin-right: 250px;
+    }
+
+    pre {
+      white-space: pre-wrap;
     }
   </style>
 </head>
 <body>
   <div id="content">
     <h1>Welcome to My GitHub Portfolio</h1>
-    <div id="repo-details">Select a repository on the right to see more info.</div>
+    <p>Select a repository on the right to view it.</p>
+    <div id="repo-details"></div>
   </div>
+
   <div id="sidebar">
-    <h2>My Repositories</h2>
-    <div id="repo-list">
-      <!-- Repo links will go here -->
-    </div>
+    <h2>Repositories</h2>
+    <div id="repo-list">Loading...</div>
   </div>
 
   <script>
-    // Fetch your GitHub repos dynamically
-    fetch("https://api.github.com/users/cyberbelly/repos")
+    const username = "cyberbelly";
+    const repoList = document.getElementById("repo-list");
+    const repoDetails = document.getElementById("repo-details");
+
+    // Fetch repositories
+    fetch(`https://api.github.com/users/${username}/repos`)
       .then(res => res.json())
       .then(repos => {
-        const list = document.getElementById('repo-list');
-        const details = document.getElementById('repo-details');
+        repoList.innerHTML = "";
         repos.forEach(repo => {
-          const link = document.createElement('a');
+          const link = document.createElement("a");
           link.href = "#";
           link.textContent = repo.name;
-          link.className = "repo-tab";
-          link.onclick = () => {
-            details.innerHTML = `
-              <h2>${repo.name}</h2>
-              <p>${repo.description || "No description provided."}</p>
-              <p><a href="${repo.html_url}" target="_blank">View on GitHub</a></p>
-            `;
+          link.onclick = async () => {
+            repoDetails.innerHTML = "<p>Loading README...</p>";
+            try {
+              const readmeRes = await fetch(`https://api.github.com/repos/${username}/${repo.name}/readme`, {
+                headers: { Accept: "application/vnd.github.v3.raw" }
+              });
+              const readmeText = await readmeRes.text();
+
+              // Convert Markdown to HTML using GitHub API rendered HTML
+              const renderedHTML = await fetch(`https://api.github.com/markdown`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Accept: "application/vnd.github.v3+json"
+                },
+                body: JSON.stringify({
+                  text: readmeText,
+                  mode: "gfm",
+                  context: `${username}/${repo.name}`
+                })
+              }).then(res => res.text());
+
+              repoDetails.innerHTML = `
+                <h2>${repo.name}</h2>
+                <div>${renderedHTML}</div>
+                <p><a href="${repo.html_url}" target="_blank">View on GitHub</a></p>
+              `;
+            } catch (err) {
+              repoDetails.innerHTML = `<p>Failed to load README for ${repo.name}.</p>`;
+            }
           };
-          list.appendChild(link);
+          repoList.appendChild(link);
         });
+      })
+      .catch(err => {
+        repoList.innerHTML = "<p>Failed to load repositories.</p>";
       });
   </script>
 </body>
