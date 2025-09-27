@@ -25,7 +25,7 @@
     }
 
     #sidebar {
-      width: 250px;
+      width: 300px;
       background: #0f0f0f;
       border-left: 1px solid #00ff00;
       padding: 1em;
@@ -34,6 +34,12 @@
       right: 0;
       top: 0;
       bottom: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #repo-section, #links-section {
+      margin-bottom: 2em;
     }
 
     #repo-list a {
@@ -45,7 +51,7 @@
       flex: 1;
       padding: 2em;
       overflow-y: auto;
-      margin-right: 250px;
+      margin-right: 300px; /* Match sidebar width */
     }
 
     pre {
@@ -61,8 +67,20 @@
   </div>
 
   <div id="sidebar">
-    <h2>Repositories</h2>
-    <div id="repo-list">Loading...</div>
+    <div id="repo-section">
+      <h2>Repositories</h2>
+      <div id="repo-list">Loading...</div>
+    </div>
+
+    <div id="links-section">
+      <h2>Useful Links</h2>
+      <ul>
+        <li><a href="https://github.com/cyberbelly" target="_blank">My GitHub Profile</a></li>
+        <li><a href="https://github.com/cyberbelly?tab=stars" target="_blank">Starred Repos</a></li>
+        <li><a href="https://github.com/cyberbelly/gists" target="_blank">My Gists</a></li>
+        <li><a href="https://docs.github.com/en" target="_blank">GitHub Docs</a></li>
+      </ul>
+    </div>
   </div>
 
   <script>
